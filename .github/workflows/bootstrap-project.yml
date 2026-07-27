@@ -24,9 +24,13 @@ jobs:
       - name: Extract project archive
         shell: bash
         run: |
+          cp .github/workflows/bootstrap-project.yml /tmp/bootstrap-project.yml
           cat .bootstrap/project.part-* | base64 --decode > /tmp/support-panel.tar.xz
           find . -mindepth 1 -maxdepth 1 ! -name .git -exec rm -rf {} +
           tar -xJf /tmp/support-panel.tar.xz --strip-components=1
+          rm -rf .github/workflows
+          mkdir -p .github/workflows
+          cp /tmp/bootstrap-project.yml .github/workflows/bootstrap-project.yml
 
       - name: Publish extracted project sources
         shell: bash
