@@ -1,0 +1,65 @@
+name: Bootstrap Laravel project
+
+on:
+  push:
+    branches:
+      - agent/laravel-13-ticketing-system
+    paths:
+      - '.bootstrap/**'
+      - '.github/workflows/bootstrap-project.yml'
+
+permissions:
+  contents: write
+
+jobs:
+  bootstrap:
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Checkout bootstrap branch
+        uses: actions/checkout@v4
+        with:
+          ref: agent/laravel-13-ticketing-system
+
+      - name: Extract project archive
+        shell: bash
+        run: |
+          cat .bootstrap/project.part-* | base64 --decode > /tmp/support-panel.tar.xz
+          find . -mindepth 1 -maxdepth 1 ! -name .git -exec rm -rf {} +
+          tar -xJf /tmp/support-panel.tar.xz --strip-components=1
+
+      - name: Set up PHP
+        uses: shivammathur/setup-php@v2
+        with:
+          php-version: '8.4'
+          extensions: mbstring, dom, fileinfo, sqlite, pdo_sqlite
+          coverage: none
+
+      - name: Validate Composer manifest
+        run: composer validate --no-check-lock --strict
+
+      - name: Install dependencies
+        run: composer install --no-interaction --prefer-dist --no-progress
+
+      - name: Format PHP sources
+        run: vendor/bin/pint
+
+      - name: Publish project sources
+        shell: bash
+        run: |
+          git config user.name 'github-actions[bot]'
+          git config user.email '41898282+github-actions[bot]@users.noreply.github.com'
+          git add -A
+          git commit -m 'Build Laravel 13 support panel'
+          git push origin HEAD:agent/laravel-13-ticketing-system
+
+      - name: Prepare test environment
+        shell: bash
+        run: |
+          cp .env.example .env
+          touch database/database.sqlite
+          php artisan key:generate
+          php artisan migrate --force
+
+      - name: Run application tests
+        run: php artisan test
