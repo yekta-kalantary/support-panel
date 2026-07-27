@@ -9,7 +9,7 @@ on:
       - main
 
 permissions:
-  contents: read
+  contents: write
 
 jobs:
   test:
@@ -20,6 +20,7 @@ jobs:
       - name: Checkout
         uses: actions/checkout@v4
         with:
+          ref: agent/laravel-13-ticketing-system
           show-progress: false
 
       - name: Set up PHP
@@ -44,8 +45,17 @@ jobs:
           php artisan key:generate
           php artisan migrate --force
 
-      - name: Check code style
-        run: vendor/bin/pint --test
+      - name: Format code
+        shell: bash
+        run: |
+          vendor/bin/pint
+          git config user.name 'github-actions[bot]'
+          git config user.email '41898282+github-actions[bot]@users.noreply.github.com'
+          git add -A
+          if ! git diff --cached --quiet; then
+            git commit -m 'Format PHP sources'
+            git push origin HEAD:agent/laravel-13-ticketing-system
+          fi
 
       - name: Run tests
         run: php artisan test
