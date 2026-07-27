@@ -31,6 +31,15 @@ jobs:
           find . -mindepth 1 -maxdepth 1 ! -name .git -exec rm -rf {} +
           tar -xJf /tmp/support-panel.tar.xz --strip-components=1
 
+      - name: Publish extracted project sources
+        shell: bash
+        run: |
+          git config user.name 'github-actions[bot]'
+          git config user.email '41898282+github-actions[bot]@users.noreply.github.com'
+          git add -A
+          git commit -m 'Build Laravel 13 support panel'
+          git push origin HEAD:agent/laravel-13-ticketing-system
+
       - name: Set up PHP
         uses: shivammathur/setup-php@v2
         with:
@@ -42,19 +51,26 @@ jobs:
         run: composer validate --no-check-lock --strict
 
       - name: Install dependencies
-        run: composer install --no-interaction --prefer-dist --no-progress
-
-      - name: Format PHP sources
-        run: vendor/bin/pint
-
-      - name: Publish project sources
         shell: bash
         run: |
-          git config user.name 'github-actions[bot]'
-          git config user.email '41898282+github-actions[bot]@users.noreply.github.com'
+          if ! composer install --no-interaction --prefer-dist --no-progress > /tmp/composer-install.log 2>&1; then
+            mkdir -p .ci
+            tail -n 200 /tmp/composer-install.log > .ci/composer-install.log
+            git add .ci/composer-install.log
+            git commit -m 'Record Composer installation failure'
+            git push origin HEAD:agent/laravel-13-ticketing-system
+            exit 1
+          fi
+
+      - name: Format PHP sources
+        shell: bash
+        run: |
+          vendor/bin/pint
           git add -A
-          git commit -m 'Build Laravel 13 support panel'
-          git push origin HEAD:agent/laravel-13-ticketing-system
+          if ! git diff --cached --quiet; then
+            git commit -m 'Format PHP sources'
+            git push origin HEAD:agent/laravel-13-ticketing-system
+          fi
 
       - name: Prepare test environment
         shell: bash
@@ -65,4 +81,14 @@ jobs:
           php artisan migrate --force
 
       - name: Run application tests
-        run: php artisan test
+        shell: bash
+        run: |
+          if ! php artisan test > /tmp/test.log 2>&1; then
+            mkdir -p .ci
+            tail -n 300 /tmp/test.log > .ci/test-failure.log
+            git add .ci/test-failure.log
+            git commit -m 'Record test failure'
+            git push origin HEAD:agent/laravel-13-ticketing-system
+            exit 1
+          fi
+          cat /tmp/test.log
