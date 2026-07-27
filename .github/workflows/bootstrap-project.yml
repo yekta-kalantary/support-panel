@@ -1,57 +1,26 @@
-name: Bootstrap Laravel project
+name: Tests
 
 on:
+  push:
+    branches:
+      - main
   pull_request:
     branches:
       - main
 
 permissions:
-  contents: write
-  pull-requests: write
-  issues: write
+  contents: read
 
 jobs:
-  bootstrap:
+  test:
     runs-on: ubuntu-latest
+    timeout-minutes: 15
 
     steps:
-      - name: Checkout bootstrap branch
+      - name: Checkout
         uses: actions/checkout@v4
         with:
-          ref: agent/laravel-13-ticketing-system
           show-progress: false
-
-      - name: Extract project archive
-        shell: bash
-        run: |
-          cp .github/workflows/bootstrap-project.yml /tmp/bootstrap-project.yml
-          cat .bootstrap/project.part-* | base64 --decode > /tmp/support-panel.tar.xz
-          find . -mindepth 1 -maxdepth 1 ! -name .git -exec rm -rf {} +
-          tar -xJf /tmp/support-panel.tar.xz --strip-components=1
-          rm -rf .github/workflows
-          mkdir -p .github/workflows
-          cp /tmp/bootstrap-project.yml .github/workflows/bootstrap-project.yml
-
-      - name: Publish extracted project sources
-        shell: bash
-        env:
-          GH_TOKEN: ${{ github.token }}
-          PR_NUMBER: ${{ github.event.pull_request.number }}
-        run: |
-          git config user.name 'github-actions[bot]'
-          git config user.email '41898282+github-actions[bot]@users.noreply.github.com'
-          git add -A
-          git commit -m 'Build Laravel 13 support panel'
-          if ! git push origin HEAD:agent/laravel-13-ticketing-system > /tmp/push.log 2>&1; then
-            {
-              echo 'Project source publication failed:'
-              echo '```text'
-              tail -n 80 /tmp/push.log
-              echo '```'
-            } > /tmp/push-comment.md
-            gh pr comment "$PR_NUMBER" --body-file /tmp/push-comment.md
-            exit 1
-          fi
 
       - name: Set up PHP
         uses: shivammathur/setup-php@v2
@@ -59,33 +28,15 @@ jobs:
           php-version: '8.4'
           extensions: mbstring, dom, fileinfo, sqlite, pdo_sqlite
           coverage: none
+          tools: composer:v2
 
       - name: Validate Composer manifest
         run: composer validate --no-check-lock --strict
 
       - name: Install dependencies
-        shell: bash
-        run: |
-          if ! composer install --no-interaction --prefer-dist --no-progress > /tmp/composer-install.log 2>&1; then
-            mkdir -p .ci
-            tail -n 200 /tmp/composer-install.log > .ci/composer-install.log
-            git add .ci/composer-install.log
-            git commit -m 'Record Composer installation failure'
-            git push origin HEAD:agent/laravel-13-ticketing-system
-            exit 1
-          fi
+        run: composer install --no-interaction --prefer-dist --no-progress
 
-      - name: Format PHP sources
-        shell: bash
-        run: |
-          vendor/bin/pint
-          git add -A
-          if ! git diff --cached --quiet; then
-            git commit -m 'Format PHP sources'
-            git push origin HEAD:agent/laravel-13-ticketing-system
-          fi
-
-      - name: Prepare test environment
+      - name: Prepare application
         shell: bash
         run: |
           cp .env.example .env
@@ -93,15 +44,8 @@ jobs:
           php artisan key:generate
           php artisan migrate --force
 
-      - name: Run application tests
-        shell: bash
-        run: |
-          if ! php artisan test > /tmp/test.log 2>&1; then
-            mkdir -p .ci
-            tail -n 300 /tmp/test.log > .ci/test-failure.log
-            git add .ci/test-failure.log
-            git commit -m 'Record test failure'
-            git push origin HEAD:agent/laravel-13-ticketing-system
-            exit 1
-          fi
-          cat /tmp/test.log
+      - name: Check code style
+        run: vendor/bin/pint --test
+
+      - name: Run tests
+        run: php artisan test
