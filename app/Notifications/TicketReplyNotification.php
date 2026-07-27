@@ -16,8 +16,7 @@ class TicketReplyNotification extends Notification implements ShouldQueue
     public function __construct(
         public readonly Ticket $ticket,
         public readonly TicketMessage $message,
-    ) {
-    }
+    ) {}
 
     public function via(object $notifiable): array
     {

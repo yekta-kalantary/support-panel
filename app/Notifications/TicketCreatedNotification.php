@@ -12,9 +12,7 @@ class TicketCreatedNotification extends Notification implements ShouldQueue
 {
     use Queueable;
 
-    public function __construct(public readonly Ticket $ticket)
-    {
-    }
+    public function __construct(public readonly Ticket $ticket) {}
 
     public function via(object $notifiable): array
     {

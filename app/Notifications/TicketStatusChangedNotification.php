@@ -17,8 +17,7 @@ class TicketStatusChangedNotification extends Notification implements ShouldQueu
         public readonly Ticket $ticket,
         public readonly TicketStatus $oldStatus,
         public readonly TicketStatus $newStatus,
-    ) {
-    }
+    ) {}
 
     public function via(object $notifiable): array
     {

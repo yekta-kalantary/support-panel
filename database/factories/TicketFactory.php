@@ -4,10 +4,11 @@ namespace Database\Factories;
 
 use App\Enums\TicketStatus;
 use App\Models\Project;
+use App\Models\Ticket;
 use Illuminate\Database\Eloquent\Factories\Factory;
 
 /**
- * @extends Factory<\App\Models\Ticket>
+ * @extends Factory<Ticket>
  */
 class TicketFactory extends Factory
 {
