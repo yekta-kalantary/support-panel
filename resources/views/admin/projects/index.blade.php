@@ -46,13 +46,18 @@
                 <tbody>
                 @foreach ($projects as $project)
                     <tr>
-                        <td>{{ $project->name }}</td>
+                        <td><a class="text-link" href="{{ route('admin.projects.show', $project) }}">{{ $project->name }}</a></td>
                         <td>{{ $project->customer->full_name }}</td>
                         <td><a href="{{ $project->website_url }}" target="_blank" rel="noopener">{{ parse_url($project->website_url, PHP_URL_HOST) }}</a></td>
                         <td>{{ number_format($project->tickets_count) }}</td>
                         <td><x-status-badge :status="$project->status" /></td>
                         <td>{{ $project->created_at->format('Y/m/d') }}</td>
-                        <td><a class="text-link" href="{{ route('admin.projects.edit', $project) }}">ویرایش</a></td>
+                        <td>
+                            <div class="inline-actions">
+                                <a class="text-link" href="{{ route('admin.projects.show', $project) }}">مشاهده</a>
+                                <a class="text-link" href="{{ route('admin.projects.edit', $project) }}">ویرایش</a>
+                            </div>
+                        </td>
                     </tr>
                 @endforeach
                 </tbody>
