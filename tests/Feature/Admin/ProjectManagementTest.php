@@ -32,6 +32,31 @@ class ProjectManagementTest extends TestCase
         $this->assertSame(2, $customer->projects()->count());
     }
 
+    public function test_admin_can_view_project_information_and_its_tickets(): void
+    {
+        $admin = User::factory()->admin()->create();
+        $customer = User::factory()->create([
+            'first_name' => 'یکتا',
+            'last_name' => 'کلانتری',
+        ]);
+        $project = Project::factory()->for($customer, 'customer')->create([
+            'name' => 'وب‌سایت فروشگاهی',
+            'website_url' => 'https://example.com',
+        ]);
+        $ticket = Ticket::factory()->forProject($project)->create([
+            'subject' => 'مشکل در درگاه پرداخت',
+        ]);
+
+        $this->signInAs($admin)
+            ->get(route('admin.projects.show', $project))
+            ->assertOk()
+            ->assertSee($project->name)
+            ->assertSee($project->website_url)
+            ->assertSee($customer->full_name)
+            ->assertSee($ticket->ticket_number)
+            ->assertSee($ticket->subject);
+    }
+
     public function test_project_with_tickets_cannot_be_transferred_to_another_customer(): void
     {
         $admin = User::factory()->admin()->create();
