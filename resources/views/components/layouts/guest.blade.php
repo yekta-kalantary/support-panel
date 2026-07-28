@@ -5,6 +5,7 @@
     <meta name="viewport" content="width=device-width, initial-scale=1">
     <title>{{ $title ?? 'ورود' }} | {{ config('app.name') }}</title>
     <link rel="stylesheet" href="{{ asset('css/app.css') }}">
+    @vite('resources/css/fonts.css')
 </head>
 <body class="guest-body">
     <main class="guest-card">
