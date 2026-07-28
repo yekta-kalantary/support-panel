@@ -9,6 +9,7 @@
 - مدیریت مشتریان با وضعیت فعال و غیرفعال
 - ایجاد چند پروژه برای هر مشتری
 - مدیریت وضعیت پروژه‌ها
+- مشاهده صفحه هر پروژه، اطلاعات مشتری و تیکت‌های مرتبط
 - مشاهده، فیلتر و پاسخ به تمام تیکت‌ها
 - تغییر وضعیت تیکت بین باز، درحال بررسی و بسته
 - مشاهده و دریافت فایل‌های پیوست خصوصی
@@ -20,38 +21,73 @@
 - ورود با ایمیل و رمز عبور
 - جلوگیری از ورود حساب غیرفعال
 - مشاهده پروژه‌های متعلق به خود
+- مشاهده اطلاعات هر پروژه و تیکت‌های مرتبط با آن
 - ثبت تیکت فقط برای پروژه فعال خود
 - مشاهده و پاسخ به تیکت‌های خود
 - عدم امکان پاسخ به تیکت بسته
 - بازیابی و تغییر رمز عبور
 
+### رابط کاربری
+
+- رابط فارسی و راست‌چین
+- فونت وزیرمتن به‌صورت Self-hosted و Local
+- بدون وابستگی به CDN فونت
+- رابط واکنش‌گرا برای دسکتاپ و موبایل
+
 ## نیازمندی‌ها
 
 - PHP 8.3 یا جدیدتر
 - Composer 2
+- Node.js 22 یا 24 و npm
 - SQLite، MySQL یا PostgreSQL
 - افزونه‌های PHP موردنیاز Laravel
 
-## نصب
+## نصب سریع
 
 ```bash
 git clone https://github.com/yekta-kalantary/support-panel.git
 cd support-panel
 
-cp .env.example .env
-composer install
-
-php artisan key:generate
-touch database/database.sqlite
-php artisan migrate --seed
-
+composer setup
 php artisan serve
 ```
+
+دستور `composer setup` عملیات زیر را انجام می‌دهد:
+
+- نصب وابستگی‌های PHP
+- ساخت فایل `.env`
+- تولید `APP_KEY`
+- ساخت دیتابیس SQLite
+- اجرای Migration و Seeder
+- نصب وابستگی‌های Frontend
+- Build فونت وزیرمتن و Assetهای Vite
 
 سپس آدرس زیر را باز کنید:
 
 ```text
 http://127.0.0.1:8000
+```
+
+## نصب مرحله‌به‌مرحله
+
+```bash
+cp .env.example .env
+composer install
+php artisan key:generate
+
+touch database/database.sqlite
+php artisan migrate --seed
+
+npm install
+npm run build
+
+php artisan serve
+```
+
+برای توسعه Frontend:
+
+```bash
+npm run dev
 ```
 
 ## حساب مدیر اولیه
@@ -69,6 +105,15 @@ ADMIN_PASSWORD="ChangeMe123!"
 پیش از اجرای Seeder در محیط واقعی، این مقادیر را تغییر دهید.
 
 ## اجرای تست‌ها
+
+ابتدا Assetهای Frontend را Build کنید:
+
+```bash
+npm install
+npm run build
+```
+
+سپس:
 
 ```bash
 composer test
@@ -116,13 +161,15 @@ app/
 ├── Policies
 └── Services
 
-resources/views/
-├── admin
-├── auth
-├── layouts
-├── portal
-├── profile
-└── tickets
+resources/
+├── css
+└── views
+    ├── admin
+    ├── auth
+    ├── layouts
+    ├── portal
+    ├── profile
+    └── tickets
 ```
 
 ## مستند نیازمندی‌ها
@@ -140,3 +187,4 @@ docs/PRD.md
 - Queue Worker برای اعلان‌های ایمیلی فعال شود.
 - از پایگاه داده و `storage/app/private` نسخه پشتیبان تهیه شود.
 - رمز حساب مدیر اولیه بلافاصله تغییر کند.
+- در Deploy عملیاتی، `npm run build` اجرا شود و پوشه `public/build` در Release نهایی وجود داشته باشد.
