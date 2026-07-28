@@ -53,7 +53,7 @@ Route::middleware(['auth', 'active'])->group(function (): void {
                 ->only(['index', 'create', 'store', 'edit', 'update']);
 
             Route::resource('projects', AdminProjectController::class)
-                ->only(['index', 'create', 'store', 'edit', 'update']);
+                ->only(['index', 'create', 'store', 'show', 'edit', 'update']);
 
             Route::get('/tickets', [AdminTicketController::class, 'index'])->name('tickets.index');
             Route::get('/tickets/{ticket}', [AdminTicketController::class, 'show'])->name('tickets.show');
