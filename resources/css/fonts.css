@@ -1,0 +1,10 @@
+@import '@fontsource-variable/vazirmatn/wght.css';
+
+html,
+body,
+button,
+input,
+select,
+textarea {
+    font-family: 'Vazirmatn Variable', Tahoma, Arial, sans-serif;
+}
