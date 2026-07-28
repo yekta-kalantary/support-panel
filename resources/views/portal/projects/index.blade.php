@@ -13,7 +13,7 @@
             @foreach ($projects as $project)
                 <article class="project-card">
                     <div class="project-card-header">
-                        <h2>{{ $project->name }}</h2>
+                        <h2><a href="{{ route('portal.projects.show', $project) }}">{{ $project->name }}</a></h2>
                         <x-status-badge :status="$project->status" />
                     </div>
                     <a href="{{ $project->website_url }}" target="_blank" rel="noopener">{{ $project->website_url }}</a>
