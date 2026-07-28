@@ -72,6 +72,18 @@ class ProjectController extends Controller
             ->with('success', 'پروژه با موفقیت ایجاد شد.');
     }
 
+    public function show(Project $project): View
+    {
+        $project->load('customer')->loadCount('tickets');
+
+        return view('admin.projects.show', [
+            'project' => $project,
+            'tickets' => $project->tickets()
+                ->latest('updated_at')
+                ->paginate(15),
+        ]);
+    }
+
     public function edit(Project $project): View
     {
         return view('admin.projects.edit', [
