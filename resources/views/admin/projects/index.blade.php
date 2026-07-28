@@ -53,7 +53,7 @@
                         <td><x-status-badge :status="$project->status" /></td>
                         <td>{{ $project->created_at->format('Y/m/d') }}</td>
                         <td>
-                            <div class="inline-actions">
+                            <div class="project-actions">
                                 <a class="text-link" href="{{ route('admin.projects.show', $project) }}">مشاهده</a>
                                 <a class="text-link" href="{{ route('admin.projects.edit', $project) }}">ویرایش</a>
                             </div>
